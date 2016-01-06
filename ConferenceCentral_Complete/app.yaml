@@ -1,5 +1,5 @@
-application: your-project-id
-version: 1
+application: dsca-conference-app
+version: 2
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -30,7 +30,13 @@ handlers:       # static then dynamic
   upload: templates/index\.html
   secure: always
 
-- url: /tasks/send_confirmation_email
+- url: /tasks/send_confirmation_email_conference
+  script: main.app
+
+- url: /tasks/send_confirmation_email_session
+  script: main.app
+
+- url: /tasks/featured_speaker_check
   script: main.app
 
 - url: /crons/set_announcement

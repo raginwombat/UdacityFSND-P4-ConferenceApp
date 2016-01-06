@@ -14,7 +14,7 @@ __author__ = 'wesc+api@google.com (Wesley Chun)'
 
 import httplib
 import endpoints
-from protorpc import messages
+from protorpc import messages, message_types
 from google.appengine.ext import ndb
 
 class ConflictException(endpoints.ServiceException):
@@ -27,6 +27,7 @@ class Profile(ndb.Model):
     mainEmail = ndb.StringProperty()
     teeShirtSize = ndb.StringProperty(default='NOT_SPECIFIED')
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
+    sessionWishlistKeys = ndb.StringProperty(repeated=True)
 
 class ProfileMiniForm(messages.Message):
     """ProfileMiniForm -- update Profile form message"""
@@ -39,6 +40,8 @@ class ProfileForm(messages.Message):
     mainEmail = messages.StringField(2)
     teeShirtSize = messages.EnumField('TeeShirtSize', 3)
     conferenceKeysToAttend = messages.StringField(4, repeated=True)
+    sessionWishlistKeys =messages.StringField(5,repeated=True)
+
 
 class StringMessage(messages.Message):
     """StringMessage-- outbound (single) string message"""
@@ -107,4 +110,60 @@ class ConferenceQueryForm(messages.Message):
 class ConferenceQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple ConferenceQueryForm inbound form message"""
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
+
+
+###################
+#Task 1
+###################
+
+
+class Session(ndb.Model):
+    """Session -- Session object"""
+    name            = ndb.StringProperty(required=True)
+    highlights     = ndb.StringProperty()
+    location        = ndb.StringProperty()
+    typeofSession   = ndb.StringProperty(repeated=True)
+    speakers         = ndb.StringProperty(repeated=True)
+    startDate       = ndb.DateProperty()
+    startTime       = ndb.TimeProperty()
+    endTime         = ndb.TimeProperty()
+    endDate         = ndb.DateProperty()
+    maxAttendees    = ndb.IntegerProperty()
+    seatsAvailable  = ndb.IntegerProperty()
+
+
+
+class SessionForm(messages.Message):
+    """Session -- Session Form object"""
+    name            = messages.StringField(1, required=True)
+    highlights     = messages.StringField(2)
+    location        = messages.StringField(3)
+    typeofSession   = messages.StringField(4, repeated=True)
+    speakers        = messages.StringField(5, repeated=True )
+    startDate       = messages.StringField(6)
+    startTime       = messages.StringField(7)
+    endTime         = messages.StringField(8)
+    endDate         = messages.StringField(9)
+    maxAttendees    = messages.IntegerField(10)
+    seatsAvailable  = messages.IntegerField(11)
+
+ 
+
+
+
+class SessionForms(messages.Message):
+    """ SessionForms - Session query for multiple sessions """
+    items = messages.MessageField(SessionForm, 1, repeated=True)
+
+
+
+
+class WishList(ndb.Model):
+    """Wishlist - Wislist object stores conferences and sessions a user wants to attend"""
+    conferences     = ndb.KeyProperty(repeated=True, kind = Conference)
+    sessions        = ndb.KeyProperty(repeated=True, kind=Session)
+    
+
+
+
 
