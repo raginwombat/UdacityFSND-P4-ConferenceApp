@@ -787,7 +787,7 @@ class ConferenceApi(remote.Service):
         """Return all sessions from a given conference with a specified type."""
         # make sure user is authed
         """Pass request parameters to helper method"""
-        sessns = _getConferenceSessionsByType(request.websafeConferenceKey, request.sessionType)
+        sessns = self._getConferenceSessionsByType(request.websafeConferenceKey, request.sessionType)
 
         return SessionForms(
             items=[self._copySessionToForm(sess) for sess in sessns]
@@ -1007,12 +1007,18 @@ class ConferenceApi(remote.Service):
     def task3Solution(self, request):
         """Returns all sesions afer after a certiain time and match the session type"""
 
+        #Check that user is authorized and conferenc key is valid
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
-        user_id = getUserId(user)
-        prof_key = ndb.Key(Profile, user_id)
+
+        try:
+            prof_key = self.authUserCheck()
+        except:
+            raise endpoints.UnauthorizedException('User not authorized in CreateSession')
         prof = prof_key.get()
+
+
         '''allow blank entries, if nothing provided return entire day'''
 
         if request.searchTime is None:
@@ -1026,12 +1032,16 @@ class ConferenceApi(remote.Service):
         """Cast request as a tuple to use in the IN() filter """
         query_sessionTypes = [request.sessionType, '']
         
-        sessns_base = Session.query(Session.typeofSession.IN(request.sessionType))
+        #All queries that aren't  whatever was provided
+        sessn_type_query = Session.query(Session.typeofSession != request.sessionType)
         logging.info('Session type: %s', request.sessionType)
 
+        #All sessions before the start time provided
+        sessn_time_query = Session.query(Session.startTime <= start_time)
 
-        """Find all sesions after a certain time in the day"""
-        sessns = sessns_base.filter(Session.startTime >= start_time)
+
+        #Find all sesions after a certain time in the day
+        sessns = set(sessn_type_query).intersection( set(sessn_time_query) )
         return SessionForms(
             items=[self._copySessionToForm(sess) for sess in sessns]
         ) 

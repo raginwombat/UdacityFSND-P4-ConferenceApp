@@ -39,24 +39,26 @@ App Engine application for the Udacity training course.
 1. Speakers has been stored as a repeated value in the model to support multiple speakers and panel members being stored for sessions. 
 1. Type of Session stores the string value for the session types. While there are no specific set values restrictions are set in the API usage.
 1. The conference the session  belongs to is set as an ancestor rather than being explicitly stored in a a property of the session entity. This is to leverage the ancestor attribute of Datastore and, presumably, any efficiencies in the queries.
-1. Wishlist is linked to the user profile through the parent child hierarchy so no profile or user key is stored in the model.
 1. Wishlist is stored as a key list proptery in the profile entity. This reduces the complexity with adding and removing saved sessions.
 1. Start/End dates, seats available, max attendes are to handle cases of large multi-day conferences and sessions.
 1. Speakers are just stored as a repeated property in the Session. This simplifies the entity relationships for Sessions, speakers and conferences.
 
 
 
-##Describe 2 new types of quereies
+##Describe 2 new types of queries
 -[Task 3][3]
 
 1. Get Session before a certain time - This endpoint allows the user to search for before before a certain time
-2. Get Session after a certain time - This endpoint allows the user to search for session before a certain time
+1. Get Session after a certain time - This endpoint allows the user to search for session before a certain time
 
 Solve query problem:
-If one wanted to find all of the sessions before a certain time they could  run a query using the getSessionBeforeTime and getSessionByType. By finding the union of these two lists you get the query one is looking for.  To aid in comparison a hash can be made using the session key or name and time.
+2. Problem:
+Solve the following query related problem: Let’s say that you don't like workshops and you don't like sessions after 7 pm. How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
 
-An alternate method would be to create an index that indexes the time and workshop type, then 1 query can be run against it since NDB doesn't allow querying 2 properties in 1 query.
+2. Solution:
+If one wanted to find all of the sessions before a certain time an approach would be to first run a query to filter the returned sessions by  sessionType != workshop, this will give you a list of all of the non workshop sessions. Next another query can be run where the startTime < 7pm. By comparing the list of sessions returned by both queries you can find the sessions that are in both, this will be the union of the two sessions and be teh solution to the problem.
 
+This approach is necessary because you can only run a query on 1 property using inequality comparisions per query. This problem requires ineqaulity filters being run on 2 seperate proeprties.
 
 ## Submission 2 edits
 -[Submission Notes][3]
